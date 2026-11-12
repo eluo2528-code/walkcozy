@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f5f3ee">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="WALK">
+
+
+<title>WALK — 静静地走一段</title>
+<style>
+:root{--paper:#f5f3ee;--ink:#292923;--muted:#8e8b82;--line:#dedbd2;--accent:#657365}
+*{box-sizing:border-box} body{margin:0;background:var(--paper);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",sans-serif;min-height:100svh}
+main{max-width:520px;margin:auto;min-height:100svh;padding:env(safe-area-inset-top) 26px calc(28px + env(safe-area-inset-bottom));display:flex;flex-direction:column}
+header{padding-top:24px;display:flex;justify-content:space-between;align-items:center}
+.logo{font-size:15px;letter-spacing:.28em;font-weight:500}.quiet{font-size:11px;color:var(--muted);letter-spacing:.12em}
+#home{flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:35px 0}
+h1{font-size:29px;font-weight:400;letter-spacing:.08em;margin:0 0 14px}
+.sub{font-size:14px;color:var(--muted);line-height:1.9}
+button{font:inherit;border:0;cursor:pointer}
+.primary{margin-top:48px;width:142px;height:142px;border-radius:50%;background:var(--ink);color:#fff;font-size:16px;letter-spacing:.16em;box-shadow:0 10px 30px #29292312}
+.primary:active{transform:scale(.98)}
+.smalllink{margin-top:28px;background:none;color:var(--muted);font-size:12px;padding:10px}
+footer{text-align:center;color:#aaa69d;font-size:11px;letter-spacing:.08em;padding-bottom:8px}
+#walk,#finish,#journal,#settings{display:none;flex:1;flex-direction:column}
+.walkcenter{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.arrow{font-size:104px;line-height:1;font-weight:200;margin-bottom:34px;transition:transform .3s}
+.distance{font-size:34px;font-weight:300;letter-spacing:.04em}.unit{font-size:12px;color:var(--muted);margin-left:6px}
+.hint{font-size:13px;color:var(--muted);margin-top:15px}
+.bottomrow{display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--line);padding-top:20px}
+.textbtn{background:none;color:var(--muted);font-size:13px;padding:10px 0}
+#finish{justify-content:center;padding-bottom:10vh}
+#finish h2{font-weight:400;font-size:26px;line-height:1.6;margin:0 0 10px}
+.photo{height:220px;border:1px dashed #c9c5bb;border-radius:14px;display:flex;align-items:center;justify-content:center;overflow:hidden;margin:28px 0 16px;color:var(--muted);font-size:13px}
+.photo img{width:100%;height:100%;object-fit:cover}
+input,textarea{font:inherit;background:transparent;border:0;border-bottom:1px solid var(--line);padding:14px 2px;width:100%;outline:none;color:var(--ink);font-size:14px}
+textarea{resize:vertical;min-height:60px}
+.save{width:100%;padding:17px;background:var(--ink);color:white;border-radius:30px;margin-top:25px;letter-spacing:.12em}
+.sectiontitle{font-size:22px;font-weight:400;margin:42px 0 22px}
+.entry{padding:18px 0;border-bottom:1px solid var(--line);display:grid;grid-template-columns:76px 1fr;gap:16px}
+.thumb{width:76px;height:76px;border-radius:8px;background:#e7e4dc;object-fit:cover}
+.entrydate{font-size:13px;margin:4px 0 8px}.entrymeta{font-size:11px;color:var(--muted)}
+#settings label{font-size:12px;color:var(--muted);display:block;margin-top:26px}
+#settings input{margin-top:5px}
+.note{font-size:11px;color:var(--muted);line-height:1.8;margin-top:18px}
+.topnav{display:flex;justify-content:space-between;align-items:center;padding-top:32px}
+.topnav button{background:none;color:var(--muted);font-size:13px}
+.toast{position:fixed;left:50%;bottom:35px;transform:translateX(-50%);background:#292923;color:#fff;padding:12px 18px;border-radius:30px;font-size:12px;opacity:0;pointer-events:none;transition:opacity .2s;white-space:nowrap}
+.toast.show{opacity:1}
+</style>
+</head>
+<body>
+<main>
+<header><div class="logo">WALK</div><div class="quiet">TAKE IT SLOW</div></header>
+
+<section id="home">
+  <h1>今天，出去走走吗？</h1>
+  <div class="sub">不必去哪里。<br>只是离开一下日常。</div>
+  <button class="primary" id="start">出发</button>
+  <button class="smalllink" id="journalLink">走过的日子</button>
+  <button class="smalllink" id="settingsLink" style="margin-top:0">设置家的位置</button>
+</section>
+
+<section id="walk">
+  <div class="walkcenter">
+    <div class="arrow" id="arrow">↑</div>
+    <div><span class="distance" id="distance">—</span><span class="unit">公里</span></div>
+    <div class="hint" id="walkHint">慢慢走，不着急。</div>
+  </div>
+  <div class="bottomrow">
+    <button class="textbtn" id="pauseBtn">暂停</button>
+    <button class="textbtn" id="endBtn">结束今天的散步</button>
+  </div>
+</section>
+
+<section id="finish">
+  <h2>今天的旅程<br>结束了。</h2>
+  <div class="sub" id="finishStats">这一段路，值得留下来。</div>
+  <label class="photo" for="photoInput" id="photoBox">拍一张照片，留住此刻</label>
+  <input id="photoInput" type="file" accept="image/*" capture="environment" hidden>
+  <textarea id="memo" placeholder="也可以写一句话……（不写也没关系）"></textarea>
+  <button class="save" id="saveBtn">收藏今天</button>
+  <button class="textbtn" id="discardBtn">不保存，回到安静</button>
+</section>
+
+<section id="journal">
+  <div class="topnav"><button class="backHome">← 返回</button><span class="quiet">YOUR QUIET DAYS</span></div>
+  <h2 class="sectiontitle">走过的日子</h2>
+  <div id="entries"></div>
+  <div class="note">这些记录只保存在这台设备上。没有排名，也没有人需要看见。</div>
+</section>
+
+<section id="settings">
+  <div class="topnav"><button class="backHome">← 返回</button><span class="quiet">A PLACE TO BEGIN</span></div>
+  <h2 class="sectiontitle">家的位置</h2>
+  <div class="sub" style="text-align:left">第一次使用时，站在家附近，允许定位并保存。之后每次散步都会从这里出发，并尽量回到这里。</div>
+  <button class="save" id="setHomeBtn">使用我现在的位置</button>
+  <label>目标路程（公里）</label><input id="targetKm" type="number" min="0.8" max="5" step="0.2" value="2">
+  <div class="note">建议先从 2 公里开始。路线服务需要联网；定位与照片记录仅在你主动使用时启用。</div>
+</section>
+<footer>WALK · LEAVE HOME, FIND SOMETHING NEW</footer>
+</main>
+<div class="toast" id="toast"></div>
+<script>
+const $=id=>document.getElementById(id);
+const screens=["home","walk","finish","journal","settings"];
+function show(id){screens.forEach(s=>$(s).style.display=s===id?"flex":"none");}
+const toast=t=>{const el=$("toast");el.textContent=t;el.classList.add("show");setTimeout(()=>el.classList.remove("show"),2600)};
+let home=JSON.parse(localStorage.getItem("walk_home")||"null");
+let target=Number(localStorage.getItem("walk_target")||2);
+$("targetKm").value=target;
+let watch=null, paused=false, current=null, routePoints=[], walked=0, lastPos=null, photoData=null, heading=0;
+const rad=x=>x*Math.PI/180, deg=x=>x*180/Math.PI;
+function bearing(a,b){let p1=rad(a.lat),p2=rad(b.lat),dl=rad(b.lon-a.lon);let y=Math.sin(dl)*Math.cos(p2),x=Math.cos(p1)*Math.sin(p2)-Math.sin(p1)*Math.cos(p2)*Math.cos(dl);return (deg(Math.atan2(y,x))+360)%360}
+function hav(a,b){let R=6371000,p1=rad(a.lat),p2=rad(b.lat),dp=p2-p1,dl=rad(b.lon-a.lon);let x=Math.sin(dp/2)**2+Math.cos(p1)*Math.cos(p2)*Math.sin(dl/2)**2;return 2*R*Math.asin(Math.sqrt(x))}
+function pos(){return new Promise((resolve,reject)=>navigator.geolocation.getCurrentPosition(p=>resolve({lat:p.coords.latitude,lon:p.coords.longitude}),reject,{enableHighAccuracy:true,timeout:15000,maximumAge:5000}))}
+function destination(p,meters,angle){let d=meters/6371000,t=rad(angle),lat1=rad(p.lat),lon1=rad(p.lon);let lat2=Math.asin(Math.sin(lat1)*Math.cos(d)+Math.cos(lat1)*Math.sin(d)*Math.cos(t));let lon2=lon1+Math.atan2(Math.sin(t)*Math.sin(d)*Math.cos(lat1),Math.cos(d)-Math.sin(lat1)*Math.sin(lat2));return {lat:deg(lat2),lon:deg(lon2)}}
+async function getRoute(start,end){
+  const body={locations:[{lat:start.lat,lon:start.lon},{lat:end.lat,lon:end.lon},{lat:start.lat,lon:start.lon}], costing:"pedestrian",units:"kilometers"};
+  const r=await fetch("https://valhalla1.openstreetmap.de/route",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
+  if(!r.ok)throw Error("route");const j=await r.json();
+  // Decode Valhalla polyline6
+  function decode(str){let i=0,lat=0,lon=0,out=[];while(i<str.length){let b,s=0,res=0;do{b=str.charCodeAt(i++)-63;res|=(b&31)<<s;s+=5}while(b>=32);lat+=(res&1)?~(res>>1):(res>>1);s=0;res=0;do{b=str.charCodeAt(i++)-63;res|=(b&31)<<s;s+=5}while(b>=32);lon+=(res&1)?~(res>>1):(res>>1);out.push({lat:lat/1e6,lon:lon/1e6})}return out}
+  const shape=j.trip.legs.map(l=>decode(l.shape)).flat();return {points:shape,km:j.trip.summary.length};
+}
+async function buildRoute(){
+  if(!home)throw Error("请先设置家的位置");
+  $("walkHint").textContent="正在为你寻找一条安静的路……";
+  // Random candidate bearings; prefer a route close to requested distance.
+  let best=null;
+  for(let i=0;i<5;i++){
+    const waypoint=destination(home,Math.max(350,target*260),Math.random()*360);
+    try{const r=await getRoute(home,waypoint);let score=Math.abs(r.km-target)+Math.random()*.12;
+      if(!best||score<best.score)best={...r,score};
+    }catch(e){}
+  }
+  if(!best)throw Error("暂时无法规划路线，请检查网络后重试");
+  routePoints=best.points;current={km:best.km,started:Date.now(),points:[home],distance:0};
+  walked=0;lastPos=null;
+  $("distance").textContent=best.km.toFixed(1);
+  $("walkHint").textContent="慢慢走，不着急。";
+}
+$("start").onclick=async()=>{
+  if(!navigator.geolocation){toast("这台设备暂不支持定位");return}
+  try{
+    if(!home){toast("先设置家的位置");show("settings");return}
+    show("walk");await buildRoute();
+    watch=navigator.geolocation.watchPosition(p=>{
+      if(paused)return;const now={lat:p.coords.latitude,lon:p.coords.longitude};
+      if(lastPos){const d=hav(lastPos,now);if(d<80){walked+=d/1000;current.distance=walked;current.points.push(now)}}
+      lastPos=now;
+      let nearest=0,nd=Infinity;routePoints.forEach((pt,i)=>{let d=hav(now,pt);if(d<nd){nd=d;nearest=i}});
+      const next=routePoints[Math.min(nearest+3,routePoints.length-1)];
+      const b=bearing(now,next);$("arrow").style.transform=`rotate(${b}deg)`;
+      const remaining=Math.max(0,current.km-walked);
+      $("distance").textContent=remaining.toFixed(1);
+      if(nd>150)$("walkHint").textContent="按自己的节奏，慢慢来。";
+    },e=>toast("定位暂时不可用，请检查定位权限"),{enableHighAccuracy:true,maximumAge:3000,timeout:20000});
+  }catch(e){show("home");toast(e.message||"路线暂时不可用")}
+};
+$("pauseBtn").onclick=()=>{paused=!paused;$("pauseBtn").textContent=paused?"继续":"暂停";$("walkHint").textContent=paused?"休息一下也很好。":"慢慢走，不着急。"};
+$("endBtn").onclick=()=>{if(watch!==null)navigator.geolocation.clearWatch(watch);watch=null;show("finish");$("finishStats").textContent=`今天走过约 ${walked.toFixed(2)} 公里。`};
+$("photoInput").onchange=e=>{const f=e.target.files[0];if(!f)return;const reader=new FileReader();reader.onload=()=>{photoData=reader.result;$("photoBox").innerHTML=`<img src="${photoData}" alt="今天的照片">`};reader.readAsDataURL(f)};
+function getRecords(){return JSON.parse(localStorage.getItem("walk_records")||"[]")}
+$("saveBtn").onclick=()=>{const rec={date:new Date().toISOString(),km:walked.toFixed(2),memo:$("memo").value,photo:photoData};let a=getRecords();a.unshift(rec);localStorage.setItem("walk_records",JSON.stringify(a));resetFinish();show("home");toast("今天的旅程，已经收藏。")};
+function resetFinish(){photoData=null;$("photoInput").value="";$("photoBox").textContent="拍一张照片，留住此刻";$("memo").value=""}
+$("discardBtn").onclick=()=>{resetFinish();show("home")};
+$("journalLink").onclick=()=>{renderJournal();show("journal")};
+$("settingsLink").onclick=()=>show("settings");
+document.querySelectorAll(".backHome").forEach(b=>b.onclick=()=>show("home"));
+$("setHomeBtn").onclick=async()=>{try{const p=await pos();home=p;localStorage.setItem("walk_home",JSON.stringify(home));target=Number($("targetKm").value)||2;localStorage.setItem("walk_target",target);toast("家的位置已保存。");show("home")}catch(e){toast("无法获取位置，请允许浏览器使用定位")}};
+$("targetKm").onchange=()=>{target=Math.min(5,Math.max(.8,Number($("targetKm").value)||2));$("targetKm").value=target;localStorage.setItem("walk_target",target)};
+function renderJournal(){const box=$("entries"),a=getRecords();box.innerHTML="";if(!a.length){box.innerHTML='<div class="sub">这里还很安静。<br>等第一次散步回来，再留下一张照片。</div>';return}a.forEach(r=>{const d=new Date(r.date);const el=document.createElement("div");el.className="entry";const img=document.createElement("img");img.className="thumb";img.src=r.photo||"";const content=document.createElement("div");const date=document.createElement("div");date.className="entrydate";date.textContent=d.toLocaleDateString("zh-CN",{year:"numeric",month:"long",day:"numeric"});const meta=document.createElement("div");meta.className="entrymeta";meta.textContent=`${r.km} 公里`;const memo=document.createElement("div");memo.className="entrymeta";memo.style.marginTop="8px";memo.textContent=r.memo||"";content.append(date,meta,memo);el.append(img,content);box.append(el)})}
+
+
+</script>
+</body>
+</html>
